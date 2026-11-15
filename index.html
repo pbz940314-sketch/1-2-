@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>互動小天地｜幸運抽籤・可愛打地鼠</title>
+<style>
+:root{--pink:#ff8db5;--purple:#9a83e8;--ink:#51465e;--paper:#fffafd;--line:#f2ddeb}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Noto Sans TC","Microsoft JhengHei",sans-serif;color:var(--ink);background:linear-gradient(135deg,#fff0f6,#f2efff 55%,#eefaff);min-height:100vh}
+header{text-align:center;padding:38px 16px 20px}
+h1{margin:0 0 8px;font-size:clamp(26px,5vw,40px)}
+header p{margin:0;color:#887b98}
+nav{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;padding:10px 16px 24px}
+.tab,.btn{border:0;border-radius:999px;padding:12px 20px;font-weight:700;font-size:16px;cursor:pointer;transition:.15s}
+.tab{background:#fff;color:#776887;box-shadow:0 4px 14px #806b8b18}
+.tab.active{background:var(--purple);color:white}
+main{width:min(920px,calc(100% - 28px));margin:0 auto 50px}
+.panel{display:none;background:#ffffffdf;border:1px solid white;border-radius:28px;padding:clamp(18px,4vw,34px);box-shadow:0 12px 35px #725d8b18}
+.panel.active{display:block}
+h2{text-align:center;margin:0 0 6px;font-size:28px}
+.sub{text-align:center;color:#9587a1;margin:0 0 25px}
+label{font-weight:700;display:block;margin:16px 0 8px}
+textarea,input{font:inherit;border:2px solid var(--line);border-radius:15px;padding:12px;color:var(--ink);background:#fff;width:100%;outline:none}
+textarea:focus,input:focus{border-color:#c2a9f5}
+textarea{min-height:150px;resize:vertical}
+.hint{font-size:13px;color:#998da2;margin-top:7px}
+.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.controls input{width:100px}
+.btn.primary{background:linear-gradient(100deg,var(--pink),var(--purple));color:white}
+.btn.secondary{background:#f4effa;color:#776887}
+.btn:hover,.tab:hover{transform:translateY(-1px);filter:brightness(.99)}
+.result{margin:22px 0;padding:25px 16px;text-align:center;border-radius:22px;background:linear-gradient(120deg,#fff0f6,#f3efff);min-height:110px}
+.result strong{display:block;font-size:clamp(22px,4vw,32px);color:#8d65c7;overflow-wrap:anywhere}
+.status{text-align:center;min-height:24px;color:#8b7c96}
+.history{padding-left:24px;line-height:1.9}
+.game-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:22px 0}
+.stat{background:#fff3f8;border-radius:17px;text-align:center;padding:12px}
+.stat span{display:block;font-size:13px;color:#998da2}
+.stat b{font-size:25px;color:#8c69bd}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:480px;margin:20px auto}
+.hole{aspect-ratio:1;border:0;border-radius:22px;background:#eee9fa;font-size:clamp(35px,8vw,55px);cursor:pointer;box-shadow:inset 0 -7px #dcd2ef;display:grid;place-items:center}
+.hole:active{transform:scale(.97)}
+.hole.mole{background:#fff0f6;box-shadow:inset 0 -7px #f7c9dc}
+.center{text-align:center}
+footer{text-align:center;padding:0 16px 28px;color:#9b90a4;font-size:13px}
+@media(max-width:520px){.game-stats{gap:6px}.stat{padding:10px 4px}.stat b{font-size:21px}.btn{flex:1}}
+</style>
+</head>
+<body>
+<header><h1>🌷 互動小天地 🌷</h1><p>今天想玩哪一個小遊戲呢？</p></header>
+<nav aria-label="遊戲選單">
+<button class="tab active" data-target="lottery">🎀 幸運抽籤機</button>
+<button class="tab" data-target="mole">🐹 可愛打地鼠</button>
+</nav>
+<main>
+<section id="lottery" class="panel active">
+<h2>🎀 幸運抽籤機 🎀</h2><p class="sub">今天的幸運兒會是誰呢？</p>
+<label for="names">📝 請輸入抽籤名單</label>
+<textarea id="names" placeholder="小明&#10;小華&#10;小美&#10;小安"></textarea>
+<div class="hint">一行代表一個抽籤項目，可以輸入姓名、座號或其他內容。</div>
+<label for="count">🎯 這次要抽出幾位？</label>
+<div class="controls"><input id="count" type="number" min="1" value="1"><span>位</span></div>
+<div class="result"><div>✨ 幸運得主 ✨</div><strong id="winner">等待抽籤中...</strong></div>
+<div class="controls">
+<button class="btn primary" id="draw">🎉 開始抽籤</button>
+<button class="btn secondary" id="reset">重新設定</button>
+</div>
+<p class="status" id="lotteryStatus" aria-live="polite">尚未開始抽籤</p>
+<h3>🏆 抽籤紀錄</h3><ol class="history" id="history"><li>目前還沒有抽籤紀錄</li></ol>
+</section>
+<section id="mole" class="panel">
+<h2>🐹 可愛打地鼠</h2><p class="sub">快來抓住調皮的小地鼠！</p>
+<div class="game-stats">
+<div class="stat"><span>分數</span><b id="score">0</b></div>
+<div class="stat"><span>剩餘時間</span><b id="time">60</b></div>
+<div class="stat"><span>最高分</span><b id="best">0</b></div>
+</div>
+<div class="grid" id="holes" aria-label="打地鼠遊戲區"></div>
+<div class="center"><button class="btn primary" id="start">開始遊戲</button><p class="status" id="gameStatus" aria-live="polite">準備好了嗎？點擊開始遊戲！</p></div>
+</section>
+</main>
+<footer>祝你今天有個好心情 ✨</footer>
+<script>
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===btn));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===btn.dataset.target));
+}));
+const names=document.getElementById('names'),count=document.getElementById('count'),winner=document.getElementById('winner'),historyList=document.getElementById('history'),lotteryStatus=document.getElementById('lotteryStatus');
+let history=[];
+document.getElementById('draw').addEventListener('click',()=>{
+ const pool=names.value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+ const n=Math.floor(Number(count.value));
+ if(!pool.length){lotteryStatus.textContent='請先輸入至少一個抽籤項目喔！';return}
+ if(!Number.isInteger(n)||n<1){lotteryStatus.textContent='抽出人數請設定為至少 1 位。';return}
+ if(n>pool.length){lotteryStatus.textContent=`名單只有 ${pool.length} 個項目，抽出人數不能超過名單數量。`;return}
+ const shuffled=[...pool];
+ for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]]}
+ const picked=shuffled.slice(0,n);
+ winner.textContent=picked.join('、');
+ lotteryStatus.textContent=`抽籤完成！共抽出 ${n} 位。`;
+ history.unshift(`${new Date().toLocaleString('zh-TW')}：${picked.join('、')}`);
+ historyList.innerHTML='';history.forEach(item=>{const li=document.createElement('li');li.textContent=item;historyList.appendChild(li)});
+});
+document.getElementById('reset').addEventListener('click',()=>{
+ names.value='';count.value=1;winner.textContent='等待抽籤中...';lotteryStatus.textContent='已重新設定';history=[];historyList.innerHTML='<li>目前還沒有抽籤紀錄</li>';
+});
+const holesEl=document.getElementById('holes'),scoreEl=document.getElementById('score'),timeEl=document.getElementById('time'),bestEl=document.getElementById('best'),gameStatus=document.getElementById('gameStatus');
+let score=0,time=60,active=-1,playing=false,timer=null,moleTimer=null;
+let best=0;try{best=Number(localStorage.getItem('moleBest')||0)}catch(e){}bestEl.textContent=best;
+const holes=[];
+for(let i=0;i<9;i++){const b=document.createElement('button');b.className='hole';b.type='button';b.textContent='🕳️';b.setAttribute('aria-label',`第 ${i+1} 個洞`);b.addEventListener('click',()=>{if(playing&&i===active){score++;scoreEl.textContent=score;showMole()}});holesEl.appendChild(b);holes.push(b)}
+function showMole(){holes.forEach((b,i)=>{b.classList.toggle('mole',i===active);b.textContent=i===active?'🐹':'🕳️'});let next=Math.floor(Math.random()*9);if(next===active)next=(next+1)%9;active=next;holes.forEach((b,i)=>{b.classList.toggle('mole',i===active);b.textContent=i===active?'🐹':'🕳️'})}
+function endGame(){playing=false;clearInterval(timer);clearInterval(moleTimer);active=-1;holes.forEach(b=>{b.textContent='🕳️';b.classList.remove('mole')});if(score>best){best=score;bestEl.textContent=best;try{localStorage.setItem('moleBest',String(best))}catch(e){}}gameStatus.textContent=`時間到！你的分數是 ${score} 分。再玩一次吧！`}
+document.getElementById('start').addEventListener('click',()=>{
+ if(playing)return;score=0;time=60;active=-1;scoreEl.textContent=score;timeEl.textContent=time;playing=true;gameStatus.textContent='遊戲開始！快點擊地鼠！';showMole();
+ timer=setInterval(()=>{time--;timeEl.textContent=time;if(time<=0)endGame()},1000);
+ moleTimer=setInterval(showMole,850);
+});
+</script>
+</body>
+</html>
